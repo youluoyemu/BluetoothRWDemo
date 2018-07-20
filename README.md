@@ -1,2 +1,2 @@
 # BluetoothRWDemo
-A demo with reading and writing of bluetooth
+A demo about reading and writing with bluetooth
