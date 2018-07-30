@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- area   PC\TID\EPC\USER\加密区-->
+    <string-array name="area">
+        <item>PC</item>
+        <item>TID</item>
+        <item>EPC</item>
+        <item>USER</item>
+        <item>加密区</item>
+    </string-array>
+
+    <!--power setting -->
+    <string-array name="setting_power">
+        <item>15</item>
+        <item>30</item>
+    </string-array>
+
+    <!--profile setting 40k、250k、300k、400k-->
+    <string-array name="setting_profile">
+        <item>40k</item>
+        <item>250k</item>
+        <item>300k</item>
+        <item>400k</item>
+    </string-array>
+
+    <!--area setting -->
+    <string-array name="setting_area">
+        <item>920 - 925</item>
+    </string-array>
+
+    <!--algorithm property-->
+    <string-array name="property">
+        <item>固定算法</item>
+        <item>动态算法</item>
+    </string-array>
+
+    <string-array name="reverse">
+        <item>禁用</item>
+        <item>启用</item>
+    </string-array>
+
+    <string-array name="q_start">
+        <item>4</item>
+    </string-array>
+
+    <string-array name="q_range_start">
+        <item>0</item>
+    </string-array>
+
+    <string-array name="q_range_end">
+        <item>15</item>
+    </string-array>
+
+    <string-array name="session">
+        <item>session 0</item>
+        <item>session 1</item>
+        <item>session 2</item>
+        <item>session 3</item>
+        <item>session 4</item>
+    </string-array>
+
+</resources>

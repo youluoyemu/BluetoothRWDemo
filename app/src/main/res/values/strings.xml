@@ -1,0 +1,70 @@
+<resources>
+    <string name="app_name">BluetoothRWDemo</string>
+
+    <string name="address">蓝牙地址</string>
+    <string name="bluetooth_list">蓝牙列表</string>
+    <string name="btn_conn">连接</string>
+    <string name="conn_failed">连接失败</string>
+    <string name="not_support">该设备不支持蓝牙！</string>
+    <string name="discovery_finish">设备发现完成！</string>
+    <string name="connect_loading">正在连接....</string>
+    <string name="connect_success">连接成功!</string>
+
+    <string name="dev_name">设备名称：%1$s %2$s</string>
+    <string name="power">功率：%1$s dBm</string>
+    <string name="battery">电池电量：%1$d</string>
+
+    <!--FunctionActivity-->
+    <string name="tag_check">盘点</string>
+    <string name="tag_rw">读写</string>
+    <string name="tag_permission">权限</string>
+    <string name="tag_settings">设置</string>
+
+
+    <!--check tag-->
+    <string name="order_number">序号</string>
+    <string name="epc_tid">EPC/TID</string>
+    <string name="times">次数</string>
+    <string name="rssi">RSSI</string>
+    <string name="btn_start">开始</string>
+    <string name="btn_stop">停止</string>
+    <string name="btn_clear">清除</string>
+    <string name="rssi_data">%1$s dBm</string>
+
+    <!--read & write-->
+    <string name="area">区域</string>
+    <string name="start_address">起始地址</string>
+    <string name="length">长度</string>
+    <string name="btn_read">读取</string>
+    <string name="btn_write">写入</string>
+    <string name="btn_destroy">销毁</string>
+    <string name="write_success">写入成功</string>
+    <string name="destroy_success">销毁成功</string>
+
+    <!--permission-->
+    <string name="btn_pwd_read">读取密码</string>
+    <string name="btn_pwd_write">写入密码</string>
+    <string name="btn_pwd_modify">修改密码</string>
+    <string name="btn_pwd_destroy">销毁密码</string>
+    <string name="btn_pwd_encrypt">加密cos</string>
+
+    <!--settings-->
+    <string name="setting_power">功率设置</string>
+    <string name="setting_profile">链接设置</string>
+    <string name="setting_area">区域设置</string>
+    <string name="setting_skip_time">跳频时间</string>
+    <string name="open_time">开</string>
+    <string name="close_time">关</string>
+    <string name="setting_frequency_point">频点设置</string>
+    <string name="btn_set">设置</string>
+
+    <string name="algorithm">算法</string>
+    <string name="property">属性</string>
+    <string name="reverse">翻转</string>
+    <string name="q_start">起始Q值</string>
+    <string name="q_range">Q值范围</string>
+    <string name="line_range">——</string>
+    <string name="session">Session值</string>
+
+
+</resources>
