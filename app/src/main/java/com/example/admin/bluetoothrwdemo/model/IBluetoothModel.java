@@ -5,6 +5,7 @@ import java.util.List;
 public interface IBluetoothModel {
 	/**
 	 * 添加蓝牙地址
+	 *
 	 * @param address 蓝牙地址
 	 */
 	void addAddress(String address);
@@ -18,7 +19,8 @@ public interface IBluetoothModel {
 
 	/**
 	 * 连接蓝牙
-	 * @param address 蓝牙地址
+	 *
+	 * @param address  蓝牙地址
 	 * @param callback 回调函数
 	 */
 	void connectBluetooth(String address, OnBluetoothConnectedCallback callback);
@@ -35,6 +37,7 @@ public interface IBluetoothModel {
 
 	/**
 	 * 接收蓝牙返回数据
+	 *
 	 * @param callback 回调函数
 	 */
 	void receiveBluetoothData(OnBluetoothReceiveCallback callback);
@@ -46,6 +49,7 @@ public interface IBluetoothModel {
 
 	/**
 	 * 获取功率
+	 *
 	 * @param callback 回调函数
 	 */
 	void getPower(OnBluetoothReceiveCallback callback);
@@ -54,6 +58,30 @@ public interface IBluetoothModel {
 	 * 断开蓝牙连接
 	 */
 	void disconnectBluetooth();
+
+	/**
+	 * 从标签数据区域读取数据
+	 *
+	 * @param area         区域
+	 * @param addressStart 起始地址
+	 * @param length       长度
+	 * @param callback     回调函数
+	 */
+	void readTagDataArea(String area, String addressStart, String length, OnBluetoothReceiveCallback callback);
+
+	/**
+	 * 写入数据到标签数据区域
+	 *
+	 * @param area         区域
+	 * @param addressStart 起始地址
+	 * @param length       长度
+	 * @param writeData         写入数据
+	 * @param callback     回调函数
+	 */
+	void writeTagDataArea(String area, String addressStart, String length, String writeData, OnBluetoothReceiveCallback callback);
+
+
+
 
 	/**
 	 * 蓝牙连接回调接口
@@ -65,7 +93,7 @@ public interface IBluetoothModel {
 	/**
 	 * 蓝牙接收数据回调接口
 	 */
-	interface OnBluetoothReceiveCallback{
+	interface OnBluetoothReceiveCallback {
 		void onBluetoothReceive(String result);
 	}
 }

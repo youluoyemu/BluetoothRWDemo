@@ -30,13 +30,11 @@ public class RWFragment extends Fragment implements IRWView, View.OnClickListene
 	private EditText mEtWrite;
 	private EditText mEtDestroy;
 
-	private IRFIDFunction mRFIDFunction;
 	private IRWPresenter mRWPresenter;
 
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mRFIDFunction = RFIDFunctionImpl.getInstance(getActivity());
 		mRWPresenter = new RWPresenterImpl(this);
 	}
 
@@ -101,5 +99,23 @@ public class RWFragment extends Fragment implements IRWView, View.OnClickListene
 			default:
 				break;
 		}
+	}
+
+	@Override
+	public void setReadResultText(final String result) {
+		if (getActivity() == null) {
+			return;
+		}
+		getActivity().runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				mEtRead.setText(result);
+			}
+		});
+	}
+
+	@Override
+	public void setWriteResultText(String result) {
+		mEtWrite.setText(result);
 	}
 }

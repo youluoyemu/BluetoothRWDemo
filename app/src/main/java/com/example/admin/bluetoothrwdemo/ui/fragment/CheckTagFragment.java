@@ -21,9 +21,6 @@ import com.example.admin.bluetoothrwdemo.bean.TagInfo;
 import com.example.admin.bluetoothrwdemo.presenter.CheckTagPresenterImpl;
 import com.example.admin.bluetoothrwdemo.presenter.ICheckTagPresenter;
 import com.example.admin.bluetoothrwdemo.presenter.IRFIDFunction;
-import com.example.admin.bluetoothrwdemo.presenter.RFIDFunctionImpl;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class CheckTagFragment extends Fragment implements View.OnClickListener, IRFIDFunction.OnTagInfoUpdateCallback, ICheckTagView {
@@ -35,7 +32,6 @@ public class CheckTagFragment extends Fragment implements View.OnClickListener, 
 	private Button mBtnStop;
 	private Button mBtnClear;
 
-	private IRFIDFunction mRFIDFunction;
 	private OnCheckStoppedListener mCheckStoppedListener;
 	private TagInfoAdapter mTagInfoAdapter;
 
@@ -121,7 +117,6 @@ public class CheckTagFragment extends Fragment implements View.OnClickListener, 
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mRFIDFunction = RFIDFunctionImpl.getInstance(getActivity());
 		mCheckTagPresenter = new CheckTagPresenterImpl(this);
 	}
 
@@ -162,13 +157,11 @@ public class CheckTagFragment extends Fragment implements View.OnClickListener, 
 		switch (view.getId()) {
 			case R.id.btn_start:
 				mCheckStoppedListener.onCheckStopped(false);
-//				mRFIDFunction.startCheckTag(mTagInfoList, this);
 				mCheckTagPresenter.startCheckTag();
 				mBtnStart.setEnabled(false);
 				mBtnStop.setEnabled(true);
 				break;
 			case R.id.btn_stop:
-//				mRFIDFunction.stopCheckTag();
 				mCheckTagPresenter.stopCheckTag();
 				break;
 			case R.id.btn_clear:

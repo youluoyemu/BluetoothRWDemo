@@ -37,6 +37,7 @@ public class FunctionActivity extends AppCompatActivity implements View.OnClickL
 	private TextView mBtnPermission;
 	private TextView mBtnSettings;
 	private TextView mBtnCurChoice;
+	private TextView mTvTitle;
 	private ImageView mIvBack;
 
 	private Fragment mCurFragment;
@@ -81,9 +82,11 @@ public class FunctionActivity extends AppCompatActivity implements View.OnClickL
 		mBtnPermission = findViewById(R.id.tv_permission);
 		mBtnSettings = findViewById(R.id.tv_settings);
 		mIvBack = findViewById(R.id.iv_back);
+		mTvTitle = findViewById(R.id.tv_title);
 	}
 
 	private void initData() {
+		mTvTitle.setText(R.string.function_title);
 		mTvDevName.setText(getString(R.string.dev_name, Build.BRAND, Build.MODEL));
 		mTvPower.setText(getString(R.string.power, "0"));
 		mFunctionPresenter = new FunctionPresenterImpl(this);

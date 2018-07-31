@@ -15,6 +15,7 @@
     <string name="battery">电池电量：%1$d</string>
 
     <!--FunctionActivity-->
+    <string name="function_title">功能测试</string>
     <string name="tag_check">盘点</string>
     <string name="tag_rw">读写</string>
     <string name="tag_permission">权限</string>

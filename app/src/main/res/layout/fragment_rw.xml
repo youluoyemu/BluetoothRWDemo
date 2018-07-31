@@ -47,6 +47,7 @@
                     android:text="@string/start_address" />
 
                 <EditText
+                    android:inputType="number"
                     android:id="@+id/et_start_address"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -65,6 +66,7 @@
                     android:text="@string/length" />
 
                 <EditText
+                    android:inputType="number"
                     android:id="@+id/et_length"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
