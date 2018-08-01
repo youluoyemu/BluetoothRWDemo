@@ -18,7 +18,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class BluetoothManager implements IBluetoothModel {
@@ -29,7 +31,13 @@ public class BluetoothManager implements IBluetoothModel {
 	private static final int STATE_CONNECTED = 0;
 	private static final int STATE_DISCONNECTED = 1;
 	private static final String ACCESS_PWD = "00000000";
-	private static final String KILL_PWD = "00000000";
+	private static final String KEY_START_CHECK = "startCheck";
+	private static final String KEY_STOP_CHECK = "stopCheck";
+	private static final String KEY_GET_POWER = "getPower";
+	private static final String KEY_READ_DATA = "readData";
+	private static final String KEY_WRITE_DATA = "writeData";
+	private static final String KEY_DESTROY_DATA = "destroyData";
+	private static final String KEY_SET_POWER = "setPower";
 
 	// 静态变量
 	private static BluetoothManager INSTANCE;
@@ -41,15 +49,18 @@ public class BluetoothManager implements IBluetoothModel {
 	private BluetoothAdapter mBluetoothAdapter;
 	private BluetoothSocket mSocket;
 	private OnBluetoothConnectedCallback mConnectedCallback;
-	private OnBluetoothReceiveCallback mReceiveThead;
+	private OnBluetoothReceiveCallback mReceiveCallback;
+	private Map<String, OnBluetoothReceiveCallback> mReceiveCallbackMap;
 	private ConnectThread mConnectThread;
 	private ReceiveThread mReceiveThread;
 	private volatile int mState;
 	private int mOrder = 1;
+	private String mCurKey;
 
 	private BluetoothManager() {
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		initAddressList();
+		mReceiveCallbackMap = new HashMap<>();
 	}
 
 	public static BluetoothManager getInstance() {
@@ -100,42 +111,34 @@ public class BluetoothManager implements IBluetoothModel {
 	}
 
 	@Override
-	public synchronized void startSerialCheckTag(OnBluetoothReceiveCallback callback) {
-		if (mReceiveThread != null) {
-			mReceiveThread = null;
+	public void startSerialCheckTag(OnBluetoothReceiveCallback callback) {
+		if (mReceiveThread == null) {
+			mReceiveThread = new ReceiveThread();
+			mReceiveThread.start();
 		}
-		mReceiveThead = callback;
-		mReceiveThread = new ReceiveThread();
+		mReceiveCallbackMap.put(KEY_START_CHECK, callback);
 		byte[] sendFrame = createSendFrame(ZECmd.UHF_COM.getCmd(), RECmd.SEARCH_TAG.getCmdIndex(), times);
 		mReceiveThread.write(sendFrame);
-		mReceiveThread.start();
 	}
 
 	@Override
-	public synchronized void stopSerialCheckTag(OnBluetoothReceiveCallback callback) {
-		if (mReceiveThread != null) {
-			mReceiveThread = null;
+	public void stopSerialCheckTag(OnBluetoothReceiveCallback callback) {
+		if (mReceiveThread == null) {
+			mReceiveThread = new ReceiveThread();
+			mReceiveThread.start();
 		}
-		mReceiveThead = callback;
-		mReceiveThread = new ReceiveThread();
+		mReceiveCallbackMap.put(KEY_STOP_CHECK, callback);
 		byte[] sendFrame = createSendFrame(ZECmd.UHF_COM.getCmd(), RECmd.END_SEARCH_TAG.getCmdIndex(), "");
 		mReceiveThread.write(sendFrame);
-		mReceiveThread.start();
 	}
 
 	@Override
 	public synchronized void receiveBluetoothData(OnBluetoothReceiveCallback callback) {
-		if (mConnectThread != null) {
-//			mConnectThread.cancel();
-			mConnectThread = null;
+		if (mReceiveThread == null) {
+			mReceiveThread = new ReceiveThread();
+			mReceiveThread.start();
 		}
-
-		if (mReceiveThread != null) {
-//			mReceiveThread.cancel();
-			mReceiveThread = null;
-		}
-		mReceiveThead = callback;
-		mReceiveThread = new ReceiveThread();
+		mReceiveCallback = callback;
 		FramePT02 sendFrame = new FramePT02();
 		sendFrame.setControl(0x2411);
 		byte[] dataArrays = new byte[3];
@@ -146,7 +149,6 @@ public class BluetoothManager implements IBluetoothModel {
 		sendFrame.setDatas(dataArrays);
 		byte[] send = sendFrame.toBytes();
 		mReceiveThread.write(send);
-		mReceiveThread.start();
 	}
 
 	@Override
@@ -156,16 +158,14 @@ public class BluetoothManager implements IBluetoothModel {
 	}
 
 	@Override
-	public synchronized void getPower(OnBluetoothReceiveCallback callback) {
-		mReceiveThead = callback;
-		byte[] sendFrame = createSendFrame(ZECmd.UHF_COM.getCmd(), RECmd.GET_SEND_POWER.getCmdIndex(), "");
+	public void getPower(OnBluetoothReceiveCallback callback) {
 		if (mReceiveThread == null) {
 			mReceiveThread = new ReceiveThread();
-			mReceiveThread.write(sendFrame);
 			mReceiveThread.start();
-		} else {
-			mReceiveThread.write(sendFrame);
 		}
+		mReceiveCallbackMap.put(KEY_GET_POWER, callback);
+		byte[] sendFrame = createSendFrame(ZECmd.UHF_COM.getCmd(), RECmd.GET_SEND_POWER.getCmdIndex(), "");
+		mReceiveThread.write(sendFrame);
 	}
 
 	@Override
@@ -181,32 +181,55 @@ public class BluetoothManager implements IBluetoothModel {
 
 	@Override
 	public void readTagDataArea(String area, String addressStart, String length, OnBluetoothReceiveCallback callback) {
-		mReceiveThead = callback;
-		if (mReceiveThread != null) {
-			mReceiveThread = null;
+		if (mReceiveThread == null) {
+			mReceiveThread = new ReceiveThread();
+			mReceiveThread.start();
 		}
-		mReceiveThread = new ReceiveThread();
+		mReceiveCallbackMap.put(KEY_READ_DATA, callback);
 		String data = getRWData(area, addressStart, length, ACCESS_PWD);
 		if (data == null) {
 			return;
 		}
 		byte[] sendFrame = createSendFrame(ZECmd.UHF_COM.getCmd(), RECmd.READ_TAG.getCmdIndex(), data);
 		mReceiveThread.write(sendFrame);
-		mReceiveThread.start();
 	}
 
 	@Override
 	public void writeTagDataArea(String area, String addressStart, String length, String writeData, OnBluetoothReceiveCallback callback) {
-		mReceiveThead = callback;
-		if (mReceiveThead != null) {
-			mReceiveThead = null;
+		if (mReceiveThread == null) {
+			mReceiveThread = new ReceiveThread();
+			mReceiveThread.start();
 		}
-		mReceiveThread = new ReceiveThread();
+		mReceiveCallbackMap.put(KEY_WRITE_DATA, callback);
 		String dataPre = getRWData(area, addressStart, length, ACCESS_PWD);
 		String data = dataPre + writeData;
 		byte[] sendFrame = createSendFrame(ZECmd.UHF_COM.getCmd(), RECmd.WRITE_TAG.getCmdIndex(), data);
 		mReceiveThread.write(sendFrame);
-		mReceiveThread.start();
+	}
+
+	@Override
+	public void destroyTagDataArea(String area, String addressStart, String length, OnBluetoothReceiveCallback callback) {
+		if (mReceiveThread == null) {
+			mReceiveThread = new ReceiveThread();
+			mReceiveThread.start();
+		}
+		mReceiveCallbackMap.put(KEY_DESTROY_DATA, callback);
+		String data = getRWData(area, addressStart, length, ACCESS_PWD);
+		byte[] sendFrame = createSendFrame(ZECmd.UHF_COM.getCmd(), RECmd.BLOCK_ERASE_TAG.getCmdIndex(), data);
+		mReceiveThread.write(sendFrame);
+	}
+
+	@Override
+	public void setPower(String power, OnBluetoothReceiveCallback callback) {
+		if (mReceiveThread == null) {
+			mReceiveThread = new ReceiveThread();
+			mReceiveThread.start();
+		}
+		mReceiveCallbackMap.put(KEY_SET_POWER, callback);
+		String data = "0000" + DataConvert.toHexString(Integer.parseInt(power) * 100, 2) +
+				DataConvert.toHexString(Integer.parseInt(power) * 100, 2);
+		byte[] sendFrame = createSendFrame(ZECmd.UHF_COM.getCmd(), RECmd.SET_SEND_POWER.getCmdIndex(), data);
+		mReceiveThread.write(sendFrame);
 	}
 
 	private byte[] createSendFrame(String zCmd, String rCmd, String data) {
@@ -227,8 +250,10 @@ public class BluetoothManager implements IBluetoothModel {
 		String result = null;
 		if (recFrame.substring(2, 6).equals("8811")
 				&& recFrame.substring(22, 24).equals("13")) { // 获取功率
+			mCurKey = KEY_GET_POWER;
 			String power = recFrame.substring(28, 32);
 			result = Integer.parseInt(power, 16) / 100 + "";
+
 		} else if (recFrame.substring(2, 6).equals("A411")) { // 盘点标签
 			String data = recFrame.substring(18, recFrame.length() - 4);
 			List<TagInfo> tagInfoList = new ArrayList<>();
@@ -249,6 +274,7 @@ public class BluetoothManager implements IBluetoothModel {
 			result = gson.toJson(tagInfoList);
 		} else if (recFrame.substring(2, 6).equals("8811")
 				&& recFrame.substring(22, 24).equals("83")) { // 开始连续盘存标签
+			mCurKey = KEY_START_CHECK;
 			TagInfo tagInfo = new TagInfo();
 			tagInfo.setOrderNumber(mOrder++ + "");
 			tagInfo.setTimes(Integer.parseInt(times, 16) + "");
@@ -270,9 +296,11 @@ public class BluetoothManager implements IBluetoothModel {
 			result = gson.toJson(tagInfo);
 		} else if (recFrame.substring(2, 6).equals("8811")
 				&& recFrame.substring(16, 18).equals("8D")) { // 停止连续盘存标签
+			mCurKey = KEY_STOP_CHECK;
 			return recFrame.substring(18, 20).equals("01") + "";
 		} else if (recFrame.substring(2, 6).equals("8811")
 				&& recFrame.substring(22, 24).equals("85")) { // 读取标签数据
+			mCurKey = KEY_READ_DATA;
 			if (recFrame.substring(24, 26).equals("00")) {
 				String errFlag = recFrame.substring(26, 28);
 				switch (errFlag) {
@@ -296,6 +324,7 @@ public class BluetoothManager implements IBluetoothModel {
 			}
 		} else if (recFrame.substring(2, 6).equals("8811")
 				&& recFrame.substring(22, 24).equals("87")) { // 写入标签数据
+			mCurKey = KEY_WRITE_DATA;
 			if (recFrame.substring(24, 26).equals("00")) {
 				String errFlag = recFrame.substring(26, 28);
 				switch (errFlag) {
@@ -316,6 +345,39 @@ public class BluetoothManager implements IBluetoothModel {
 				}
 			} else if (recFrame.substring(24, 26).equals("01")) {
 				result = "写数据失败";
+			}
+		} else if (recFrame.substring(2, 6).equals("8811")
+				&& recFrame.substring(22, 24).equals("96")) { // 擦除标签数据
+			mCurKey = KEY_DESTROY_DATA;
+			if (recFrame.substring(24, 26).equals("00")) {
+				String errFlag = recFrame.substring(26, 28);
+				switch (errFlag) {
+					case "00":
+						result = "";
+						break;
+					case "01":
+						result = "无标签";
+						break;
+					case "02":
+						result = "访问密码错误";
+						break;
+					case "03":
+						result = "擦除操作失败";
+						break;
+					default:
+						break;
+				}
+			} else if (recFrame.substring(24, 26).equals("01")) {
+				result = "擦除数据失败";
+			}
+		} else if (recFrame.substring(2, 6).equals("8811")
+				&& recFrame.substring(22, 24).equals("11")) { // 设置发射功率
+			mCurKey = KEY_SET_POWER;
+			String flag = recFrame.substring(24, 26);
+			if ("01".equals(flag)) {
+				result = "设置成功";
+			} else {
+				result = "设置失败";
 			}
 		}
 		return result;
@@ -365,7 +427,7 @@ public class BluetoothManager implements IBluetoothModel {
 			}
 		}
 
-		public void cancel() {
+		void cancel() {
 			try {
 				mSocket.close();
 			} catch (IOException e) {
@@ -379,7 +441,7 @@ public class BluetoothManager implements IBluetoothModel {
 		private InputStream mInputStream;
 		private OutputStream mOutputStream;
 
-		public ReceiveThread() {
+		ReceiveThread() {
 			try {
 				mInputStream = mSocket.getInputStream();
 				mOutputStream = mSocket.getOutputStream();
@@ -395,12 +457,13 @@ public class BluetoothManager implements IBluetoothModel {
 				mState = STATE_CONNECTED;
 				byte[] buffer = new byte[1024];
 				int len;
-				while (mState == STATE_CONNECTED) {
+				while (mState == STATE_CONNECTED && mSocket.isConnected()) {
 					len = mInputStream.read(buffer);
 					if (len != -1) {
 						String recFrame = DataConvert.toHexString(buffer, 0, len);
 						String result = parseRecFrame(recFrame);
-						mReceiveThead.onBluetoothReceive(result);
+//						mReceiveCallback.onBluetoothReceive(result);
+						mReceiveCallbackMap.get(mCurKey).onBluetoothReceive(result);
 						Log.d(TAG, "receive frame:============ " + recFrame);
 						Log.d(TAG, "receive result:============ " + result);
 					}
@@ -408,11 +471,11 @@ public class BluetoothManager implements IBluetoothModel {
 			} catch (IOException e) {
 				e.printStackTrace();
 				mState = STATE_DISCONNECTED;
-				mReceiveThead.onBluetoothReceive(null);
+				mReceiveCallback.onBluetoothReceive(null);
 			}
 		}
 
-		public void cancel() {
+		void cancel() {
 			try {
 				mSocket.close();
 			} catch (IOException e) {
@@ -420,7 +483,7 @@ public class BluetoothManager implements IBluetoothModel {
 			}
 		}
 
-		public void write(byte[] buffer) {
+		void write(byte[] buffer) {
 			try {
 				mOutputStream.write(buffer);
 			} catch (IOException e) {

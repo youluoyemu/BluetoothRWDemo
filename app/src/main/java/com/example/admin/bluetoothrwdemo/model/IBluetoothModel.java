@@ -75,13 +75,28 @@ public interface IBluetoothModel {
 	 * @param area         区域
 	 * @param addressStart 起始地址
 	 * @param length       长度
-	 * @param writeData         写入数据
+	 * @param writeData    写入数据
 	 * @param callback     回调函数
 	 */
 	void writeTagDataArea(String area, String addressStart, String length, String writeData, OnBluetoothReceiveCallback callback);
 
+	/**
+	 * 从标签数据区域擦除数据
+	 *
+	 * @param area         区域
+	 * @param addressStart 起始地址
+	 * @param length       长度
+	 * @param callback     回调函数
+	 */
+	void destroyTagDataArea(String area, String addressStart, String length, OnBluetoothReceiveCallback callback);
 
-
+	/**
+	 * 设置功率
+	 *
+	 * @param power    功率
+	 * @param callback 回调接口
+	 */
+	void setPower(String power, OnBluetoothReceiveCallback callback);
 
 	/**
 	 * 蓝牙连接回调接口

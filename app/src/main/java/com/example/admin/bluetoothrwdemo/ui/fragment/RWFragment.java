@@ -3,7 +3,6 @@ package com.example.admin.bluetoothrwdemo.ui.fragment;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +12,10 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.example.admin.bluetoothrwdemo.R;
-import com.example.admin.bluetoothrwdemo.presenter.IRFIDFunction;
 import com.example.admin.bluetoothrwdemo.presenter.IRWPresenter;
-import com.example.admin.bluetoothrwdemo.presenter.RFIDFunctionImpl;
 import com.example.admin.bluetoothrwdemo.presenter.RWPresenterImpl;
 
-public class RWFragment extends Fragment implements IRWView, View.OnClickListener {
+public class RWFragment extends BaseFragment implements IRWView, View.OnClickListener {
 
 	private Spinner mSpArea;
 	private EditText mEtStartAddress;
@@ -103,10 +100,7 @@ public class RWFragment extends Fragment implements IRWView, View.OnClickListene
 
 	@Override
 	public void setReadResultText(final String result) {
-		if (getActivity() == null) {
-			return;
-		}
-		getActivity().runOnUiThread(new Runnable() {
+		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				mEtRead.setText(result);
@@ -115,7 +109,22 @@ public class RWFragment extends Fragment implements IRWView, View.OnClickListene
 	}
 
 	@Override
-	public void setWriteResultText(String result) {
-		mEtWrite.setText(result);
+	public void setWriteResultText(final String result) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				mEtWrite.setText(result);
+			}
+		});
+	}
+
+	@Override
+	public void setDestroyResultText(final String result) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				mEtDestroy.setText(result);
+			}
+		});
 	}
 }

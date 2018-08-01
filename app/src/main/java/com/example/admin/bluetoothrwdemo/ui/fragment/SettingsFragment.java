@@ -11,15 +11,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.admin.bluetoothrwdemo.R;
 import com.example.admin.bluetoothrwdemo.bean.AlgorithmSettings;
-import com.example.admin.bluetoothrwdemo.presenter.IRFIDFunction;
 import com.example.admin.bluetoothrwdemo.presenter.ISettingsPresenter;
-import com.example.admin.bluetoothrwdemo.presenter.RFIDFunctionImpl;
 import com.example.admin.bluetoothrwdemo.presenter.SettingsPresenterImpl;
 
-public class SettingsFragment extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener, ISettingsView {
+public class SettingsFragment extends BaseFragment implements AdapterView.OnItemSelectedListener, View.OnClickListener, ISettingsView {
 
 	private static final String TAG = "SettingsFragment";
 
@@ -42,7 +41,6 @@ public class SettingsFragment extends Fragment implements AdapterView.OnItemSele
 	private EditText mEtCloseTime;
 	private EditText mEtFrequencyPoint;
 
-	private IRFIDFunction mRFIDFunction;
 	private ISettingsPresenter mSettingsPresenter;
 
 	@Override
@@ -92,7 +90,7 @@ public class SettingsFragment extends Fragment implements AdapterView.OnItemSele
 	}
 
 	private void initData() {
-		mRFIDFunction = RFIDFunctionImpl.getInstance(getActivity());
+		mSettingsPresenter = new SettingsPresenterImpl(this);
 	}
 
 	private void initEvent() {
@@ -183,5 +181,15 @@ public class SettingsFragment extends Fragment implements AdapterView.OnItemSele
 			default:
 				break;
 		}
+	}
+
+	@Override
+	public void displayResultMsg(final String msg) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
+			}
+		});
 	}
 }

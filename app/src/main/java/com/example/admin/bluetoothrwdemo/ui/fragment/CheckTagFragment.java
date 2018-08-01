@@ -4,8 +4,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,16 +12,15 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.admin.bluetoothrwdemo.R;
 import com.example.admin.bluetoothrwdemo.bean.TagInfo;
 import com.example.admin.bluetoothrwdemo.presenter.CheckTagPresenterImpl;
 import com.example.admin.bluetoothrwdemo.presenter.ICheckTagPresenter;
-import com.example.admin.bluetoothrwdemo.presenter.IRFIDFunction;
+
 import java.util.List;
 
-public class CheckTagFragment extends Fragment implements View.OnClickListener, IRFIDFunction.OnTagInfoUpdateCallback, ICheckTagView {
+public class CheckTagFragment extends BaseFragment implements View.OnClickListener, ICheckTagView {
 
 	private static final String TAG = CheckTagFragment.class.getSimpleName();
 
@@ -38,36 +35,6 @@ public class CheckTagFragment extends Fragment implements View.OnClickListener, 
 	private ICheckTagPresenter mCheckTagPresenter;
 
 	@Override
-	public void onTagInfoUpdate() {
-		if (getActivity() == null) {
-			return;
-		}
-		getActivity().runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				mTagInfoAdapter.notifyDataSetChanged();
-			}
-		});
-	}
-
-	@Override
-	public void showReceiveData(final String data) {
-		if (getActivity() == null) {
-			return;
-		}
-		getActivity().runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				if (TextUtils.isEmpty(data)) {
-					Toast.makeText(getActivity(), "return no data", Toast.LENGTH_SHORT).show();
-					return;
-				}
-				Toast.makeText(getActivity(), data, Toast.LENGTH_SHORT).show();
-			}
-		});
-	}
-
-	@Override
 	public void showTagInfoList(List<TagInfo> tagInfoList) {
 		mTagInfoAdapter = new TagInfoAdapter(tagInfoList);
 		mLvTagInfo.setAdapter(mTagInfoAdapter);
@@ -75,10 +42,7 @@ public class CheckTagFragment extends Fragment implements View.OnClickListener, 
 
 	@Override
 	public void refreshTagInfoList() {
-		if (getActivity() == null) {
-			return;
-		}
-		getActivity().runOnUiThread(new Runnable() {
+		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				mTagInfoAdapter.notifyDataSetChanged();
@@ -88,10 +52,7 @@ public class CheckTagFragment extends Fragment implements View.OnClickListener, 
 
 	@Override
 	public void refreshBtnState() {
-		if (getActivity() == null) {
-			return;
-		}
-		getActivity().runOnUiThread(new Runnable() {
+		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				mCheckStoppedListener.onCheckStopped(true);
@@ -117,7 +78,9 @@ public class CheckTagFragment extends Fragment implements View.OnClickListener, 
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mCheckTagPresenter = new CheckTagPresenterImpl(this);
+		if (mCheckTagPresenter == null) {
+			mCheckTagPresenter = new CheckTagPresenterImpl(this);
+		}
 	}
 
 	@Nullable

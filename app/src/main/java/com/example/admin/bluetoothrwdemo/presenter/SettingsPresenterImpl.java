@@ -17,7 +17,7 @@ public class SettingsPresenterImpl implements ISettingsPresenter {
 
 	@Override
 	public void setPower(String power) {
-
+		mBluetoothModel.setPower(power, new OnSetPowerCallback());
 	}
 
 	@Override
@@ -43,5 +43,13 @@ public class SettingsPresenterImpl implements ISettingsPresenter {
 	@Override
 	public void setAlgorithm(AlgorithmSettings algorithmSettings) {
 
+	}
+
+	private class OnSetPowerCallback implements IBluetoothModel.OnBluetoothReceiveCallback {
+
+		@Override
+		public void onBluetoothReceive(String result) {
+			mSettingsView.displayResultMsg(result);
+		}
 	}
 }

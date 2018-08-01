@@ -16,7 +16,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,14 +24,10 @@ import com.example.admin.bluetoothrwdemo.presenter.IMainPresenter;
 import com.example.admin.bluetoothrwdemo.presenter.MainPresenterImpl;
 import com.example.admin.bluetoothrwdemo.ui.activity.FunctionActivity;
 import com.example.admin.bluetoothrwdemo.R;
-import com.example.admin.bluetoothrwdemo.presenter.IRFIDFunction;
-import com.example.admin.bluetoothrwdemo.presenter.RFIDFunctionImpl;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-public class MainActivity extends AppCompatActivity implements IMainView, View.OnClickListener, AdapterView.OnItemSelectedListener, IRFIDFunction.OnBluetoothInitCallback {
+public class MainActivity extends AppCompatActivity implements IMainView, View.OnClickListener, AdapterView.OnItemSelectedListener {
 
 	public static final String TAG = "MainActivity";
 	private static final int REQUEST_ENABLE_BT = 1;
@@ -46,7 +41,6 @@ public class MainActivity extends AppCompatActivity implements IMainView, View.O
 	private BluetoothAdapter mBluetoothAdapter;
 	private ArrayAdapter<String> mAddressListAdapter;
 	private boolean mStartup;
-	private String mBluetoothAddress;
 
 	private BroadcastReceiver mBluetoothReceiver;
 	private IMainPresenter mMainPresenter;
@@ -151,9 +145,10 @@ public class MainActivity extends AppCompatActivity implements IMainView, View.O
 
 	private void connectBluetooth() {
 		mLlProgress.setVisibility(View.VISIBLE);
+		mTvProgress.setText(R.string.connect_loading);
 		mBluetoothAdapter.cancelDiscovery();
-		mBluetoothAddress = mEtAddress.getText().toString().trim();
-		mMainPresenter.connectBluetooth(mBluetoothAddress);
+		String bluetoothAddress = mEtAddress.getText().toString().trim();
+		mMainPresenter.connectBluetooth(bluetoothAddress);
 	}
 
 	@Override
@@ -167,15 +162,6 @@ public class MainActivity extends AppCompatActivity implements IMainView, View.O
 	@Override
 	public void onNothingSelected(AdapterView<?> adapterView) {
 
-	}
-
-	@Override
-	public void onBluetoothInit(boolean isInitial) {
-		if (isInitial) {
-			FunctionActivity.start(this, mBluetoothAddress);
-		} else {
-			Toast.makeText(this, getString(R.string.conn_failed), Toast.LENGTH_SHORT).show();
-		}
 	}
 
 	@Override

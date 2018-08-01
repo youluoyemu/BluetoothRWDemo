@@ -18,17 +18,21 @@ import com.example.admin.bluetoothrwdemo.R;
 import com.example.admin.bluetoothrwdemo.presenter.FunctionPresenterImpl;
 import com.example.admin.bluetoothrwdemo.presenter.IFunctionPresenter;
 import com.example.admin.bluetoothrwdemo.ui.fragment.CheckTagFragment;
+import com.example.admin.bluetoothrwdemo.ui.fragment.PermissionFragment;
 import com.example.admin.bluetoothrwdemo.ui.fragment.RWFragment;
 import com.example.admin.bluetoothrwdemo.ui.fragment.SettingsFragment;
-import com.example.admin.bluetoothrwdemo.presenter.RFIDFunctionImpl;
 
 public class FunctionActivity extends AppCompatActivity implements View.OnClickListener, CheckTagFragment.OnCheckStoppedListener, IFunctionView {
 
+	// 常量
 	private static final String BLUETOOTH_ADDRESS = "address";
 	private static final String TAG_CHECK = "CheckTagFragment";
 	private static final String TAG_RW = "RWFragment";
+	private static final String TAG_PERMISSION = "PermissionFragment";
 	private static final String TAG_SETTINGS = "SettingsFragment";
+	private static final String BUNDLE_CUR_TAG = "curTag";
 
+	// 成员变量
 	private TextView mTvDevName;
 	private TextView mTvPower;
 	private TextView mTvBattery;
@@ -42,10 +46,8 @@ public class FunctionActivity extends AppCompatActivity implements View.OnClickL
 
 	private Fragment mCurFragment;
 	private Fragment mCheckTagFragment;
-	private Fragment mRWFragment;
-	private Fragment mSettingsFragment;
 	private BroadcastReceiver mBatteryReceiver;
-	private IFunctionPresenter mFunctionPresenter;
+	private String mCurTag = TAG_CHECK;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +61,40 @@ public class FunctionActivity extends AppCompatActivity implements View.OnClickL
 			mBtnCurChoice = mBtnCheckTag;
 			mBtnCurChoice.setSelected(true);
 		}
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		super.onRestoreInstanceState(savedInstanceState);
+		mCurTag = savedInstanceState.getString(BUNDLE_CUR_TAG);
+		FragmentManager fragmentManager = getSupportFragmentManager();
+		switch (mCurTag) {
+			case TAG_CHECK:
+				mCurFragment = fragmentManager.findFragmentByTag(TAG_CHECK);
+				mBtnCurChoice = mBtnCheckTag;
+				break;
+			case TAG_RW:
+				mCurFragment = fragmentManager.findFragmentByTag(TAG_RW);
+				mBtnCurChoice = mBtnRW;
+				break;
+			case TAG_PERMISSION:
+				mCurFragment = fragmentManager.findFragmentByTag(TAG_PERMISSION);
+				mBtnCurChoice = mBtnPermission;
+				break;
+			case TAG_SETTINGS:
+				mCurFragment = fragmentManager.findFragmentByTag(TAG_SETTINGS);
+				mBtnCurChoice = mBtnSettings;
+				break;
+			default:
+				break;
+		}
+		mBtnCurChoice.setSelected(true);
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putString(BUNDLE_CUR_TAG, mCurTag);
 	}
 
 	@Override
@@ -89,8 +125,8 @@ public class FunctionActivity extends AppCompatActivity implements View.OnClickL
 		mTvTitle.setText(R.string.function_title);
 		mTvDevName.setText(getString(R.string.dev_name, Build.BRAND, Build.MODEL));
 		mTvPower.setText(getString(R.string.power, "0"));
-		mFunctionPresenter = new FunctionPresenterImpl(this);
-		mFunctionPresenter.onCreate();
+		IFunctionPresenter functionPresenter = new FunctionPresenterImpl(this);
+		functionPresenter.onCreate();
 	}
 
 	private void initEvent() {
@@ -114,6 +150,7 @@ public class FunctionActivity extends AppCompatActivity implements View.OnClickL
 		mCheckTagFragment = new CheckTagFragment();
 		transaction.add(R.id.fl_contain, mCheckTagFragment, TAG_CHECK);
 		transaction.commit();
+		mCurTag = TAG_CHECK;
 		mCurFragment = mCheckTagFragment;
 	}
 
@@ -134,31 +171,43 @@ public class FunctionActivity extends AppCompatActivity implements View.OnClickL
 				}
 				mCurFragment = mCheckTagFragment;
 				mBtnCurChoice = mBtnCheckTag;
+				mCurTag = TAG_CHECK;
 				break;
 			case R.id.tv_rw:
-				mRWFragment = fragmentManager.findFragmentByTag(TAG_RW);
-				if (mRWFragment == null) {
-					mRWFragment = new RWFragment();
-					transaction.add(R.id.fl_contain, mRWFragment, TAG_RW);
+				Fragment rwFragment = fragmentManager.findFragmentByTag(TAG_RW);
+				if (rwFragment == null) {
+					rwFragment = new RWFragment();
+					transaction.add(R.id.fl_contain, rwFragment, TAG_RW);
 				} else {
-					transaction.show(mRWFragment);
+					transaction.show(rwFragment);
 				}
-				mCurFragment = mRWFragment;
+				mCurFragment = rwFragment;
 				mBtnCurChoice = mBtnRW;
+				mCurTag = TAG_RW;
 				break;
 			case R.id.tv_permission:
+				Fragment permissionFragment = fragmentManager.findFragmentByTag(TAG_PERMISSION);
+				if (permissionFragment == null) {
+					permissionFragment = new PermissionFragment();
+					transaction.add(R.id.fl_contain, permissionFragment, TAG_PERMISSION);
+				} else {
+					transaction.show(permissionFragment);
+				}
+				mCurFragment = permissionFragment;
 				mBtnCurChoice = mBtnPermission;
+				mCurTag = TAG_PERMISSION;
 				break;
 			case R.id.tv_settings:
-				mSettingsFragment = fragmentManager.findFragmentByTag(TAG_SETTINGS);
-				if (mSettingsFragment == null) {
-					mSettingsFragment = new SettingsFragment();
-					transaction.add(R.id.fl_contain, mSettingsFragment, TAG_SETTINGS);
+				Fragment settingsFragment = fragmentManager.findFragmentByTag(TAG_SETTINGS);
+				if (settingsFragment == null) {
+					settingsFragment = new SettingsFragment();
+					transaction.add(R.id.fl_contain, settingsFragment, TAG_SETTINGS);
 				} else {
-					transaction.show(mSettingsFragment);
+					transaction.show(settingsFragment);
 				}
-				mCurFragment = mSettingsFragment;
+				mCurFragment = settingsFragment;
 				mBtnCurChoice = mBtnSettings;
+				mCurTag = TAG_SETTINGS;
 				break;
 			default:
 				break;

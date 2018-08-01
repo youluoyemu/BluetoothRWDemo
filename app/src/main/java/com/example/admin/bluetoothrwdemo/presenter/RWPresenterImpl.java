@@ -26,7 +26,7 @@ public class RWPresenterImpl implements IRWPresenter {
 
 	@Override
 	public void destroyData(String area, String addressStart, String length) {
-
+		mBluetoothModel.destroyTagDataArea(area, addressStart, length, new OnDestroyTagDataCallback());
 	}
 
 	private class OnReadTagDataCallback implements IBluetoothModel.OnBluetoothReceiveCallback {
@@ -41,7 +41,15 @@ public class RWPresenterImpl implements IRWPresenter {
 
 		@Override
 		public void onBluetoothReceive(String result) {
+			mRWView.setWriteResultText(result);
+		}
+	}
 
+	private class OnDestroyTagDataCallback implements IBluetoothModel.OnBluetoothReceiveCallback {
+
+		@Override
+		public void onBluetoothReceive(String result) {
+			mRWView.setDestroyResultText(result);
 		}
 	}
 }
