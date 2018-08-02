@@ -18,11 +18,11 @@ public interface ISettingsPresenter {
 	void setProfile(String profile);
 
 	/**
-	 * 设置数据区域
+	 * 设置区域
 	 *
-	 * @param area 区域类型
+	 * @param region 区域类型
 	 */
-	void setArea(String area);
+	void setRegion(String region);
 
 	/**
 	 * 设置跳频时间

@@ -25,7 +25,12 @@
 
     <!--area setting -->
     <string-array name="setting_area">
+        <item>840 - 845</item>
         <item>920 - 925</item>
+        <item>865 - 868</item>
+        <item>902 - 928</item>
+        <item>917 - 923</item>
+        <item>952 - 953</item>
     </string-array>
 
     <!--algorithm property-->

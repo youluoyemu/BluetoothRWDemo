@@ -38,6 +38,20 @@ public class BluetoothManager implements IBluetoothModel {
 	private static final String KEY_WRITE_DATA = "writeData";
 	private static final String KEY_DESTROY_DATA = "destroyData";
 	private static final String KEY_SET_POWER = "setPower";
+	private static final String KEY_SET_PROFILE = "setProfile";
+	private static final String KEY_FREQUENCY_TIME = "setFrequencyTime";
+	private static final String KEY_FREQUENCY_POINT = "setFrequencyPoint";
+	private static final String KEY_SET_REGION = "setRegion";
+	private static final String REGION_CHINA1 = "840 - 845";
+	private static final String REGION_CHINA2 = "920 - 925";
+	private static final String REGION_EUROPE = "865 - 868";
+	private static final String REGION_USA = "902 - 928";
+	private static final String REGION_KOREA = "917 - 923";
+	private static final String REGION_JAPAN = "952 - 953";
+	private static final String RF_PROFILE_40K = "40k";
+	private static final String RF_PROFILE_250K = "250k";
+	private static final String RF_PROFILE_300K = "300k";
+	private static final String RF_PROFILE_400K = "400k";
 
 	// 静态变量
 	private static BluetoothManager INSTANCE;
@@ -47,7 +61,7 @@ public class BluetoothManager implements IBluetoothModel {
 	// 成员变量
 	private List<String> mAddressList;
 	private BluetoothAdapter mBluetoothAdapter;
-	private BluetoothSocket mSocket;
+	private volatile BluetoothSocket mSocket;
 	private OnBluetoothConnectedCallback mConnectedCallback;
 	private OnBluetoothReceiveCallback mReceiveCallback;
 	private Map<String, OnBluetoothReceiveCallback> mReceiveCallbackMap;
@@ -86,6 +100,11 @@ public class BluetoothManager implements IBluetoothModel {
 	}
 
 	public void addAddress(String address) {
+		for (String tmp : mAddressList) {
+			if (tmp.equals(address)) {
+				return;
+			}
+		}
 		mAddressList.add(address);
 	}
 
@@ -232,6 +251,76 @@ public class BluetoothManager implements IBluetoothModel {
 		mReceiveThread.write(sendFrame);
 	}
 
+	@Override
+	public void setRFProfile(String profile, OnBluetoothReceiveCallback callback) {
+		if (mReceiveThread == null) {
+			mReceiveThread = new ReceiveThread();
+			mReceiveThread.start();
+		}
+		mReceiveCallbackMap.put(KEY_SET_PROFILE, callback);
+		String profileData = null;
+		switch (profile) {
+			case RF_PROFILE_40K:
+				profileData = "00";
+				break;
+			case RF_PROFILE_250K:
+				profileData = "01";
+				break;
+			case RF_PROFILE_300K:
+				profileData = "02";
+				break;
+			case RF_PROFILE_400K:
+				profileData = "03";
+				break;
+			default:
+				break;
+		}
+		if (profileData == null) {
+			return;
+		}
+		String data = "0000" + profileData;
+		byte[] sendFrame = createSendFrame(ZECmd.UHF_COM.getCmd(), "52", data);
+		mReceiveThread.write(sendFrame);
+	}
+
+	@Override
+	public void setRegion(String region, OnBluetoothReceiveCallback callback) {
+		if (mReceiveThread == null) {
+			mReceiveThread = new ReceiveThread();
+			mReceiveThread.start();
+		}
+		mReceiveCallbackMap.put(KEY_SET_REGION, callback);
+		String regionData = null;
+		switch (region) {
+			case REGION_CHINA1:
+				regionData = "01";
+				break;
+			case REGION_CHINA2:
+				regionData = "02";
+				break;
+			case REGION_EUROPE:
+				regionData = "04";
+				break;
+			case REGION_USA:
+				regionData = "08";
+				break;
+			case REGION_KOREA:
+				regionData = "16";
+				break;
+			case REGION_JAPAN:
+				regionData = "32";
+				break;
+			default:
+				break;
+		}
+		if (regionData == null) {
+			return;
+		}
+		String data = "00" + regionData;
+		byte[] sendFrame = createSendFrame(ZECmd.UHF_COM.getCmd(), "2C", data);
+		mReceiveThread.write(sendFrame);
+	}
+
 	private byte[] createSendFrame(String zCmd, String rCmd, String data) {
 		if (frameIndex >= 16) frameIndex = 0x00;
 		String readerFrame = new ReaderFrame(rCmd, data).getFrameString();
@@ -301,11 +390,12 @@ public class BluetoothManager implements IBluetoothModel {
 		} else if (recFrame.substring(2, 6).equals("8811")
 				&& recFrame.substring(22, 24).equals("85")) { // 读取标签数据
 			mCurKey = KEY_READ_DATA;
-			if (recFrame.substring(24, 26).equals("00")) {
+			if (recFrame.substring(24, 26).equals("01")) {
 				String errFlag = recFrame.substring(26, 28);
 				switch (errFlag) {
 					case "00":
-						result = "";
+						int dataLen = Integer.parseInt(recFrame.substring(28, 32), 16);
+						result = recFrame.substring(32, 32 + dataLen * 2 * 2);
 						break;
 					case "01":
 						result = "无标签";
@@ -319,17 +409,17 @@ public class BluetoothManager implements IBluetoothModel {
 					default:
 						break;
 				}
-			} else if (recFrame.substring(24, 26).equals("01")) {
+			} else if (recFrame.substring(24, 26).equals("00")) {
 				result = "读数据失败";
 			}
 		} else if (recFrame.substring(2, 6).equals("8811")
 				&& recFrame.substring(22, 24).equals("87")) { // 写入标签数据
 			mCurKey = KEY_WRITE_DATA;
-			if (recFrame.substring(24, 26).equals("00")) {
+			if (recFrame.substring(24, 26).equals("01")) {
 				String errFlag = recFrame.substring(26, 28);
 				switch (errFlag) {
 					case "00":
-						result = "";
+						result = "写数据成功";
 						break;
 					case "01":
 						result = "无标签";
@@ -343,17 +433,17 @@ public class BluetoothManager implements IBluetoothModel {
 					default:
 						break;
 				}
-			} else if (recFrame.substring(24, 26).equals("01")) {
+			} else if (recFrame.substring(24, 26).equals("00")) {
 				result = "写数据失败";
 			}
 		} else if (recFrame.substring(2, 6).equals("8811")
 				&& recFrame.substring(22, 24).equals("96")) { // 擦除标签数据
 			mCurKey = KEY_DESTROY_DATA;
-			if (recFrame.substring(24, 26).equals("00")) {
+			if (recFrame.substring(24, 26).equals("01")) {
 				String errFlag = recFrame.substring(26, 28);
 				switch (errFlag) {
 					case "00":
-						result = "";
+						result = "擦除数据成功";
 						break;
 					case "01":
 						result = "无标签";
@@ -367,12 +457,28 @@ public class BluetoothManager implements IBluetoothModel {
 					default:
 						break;
 				}
-			} else if (recFrame.substring(24, 26).equals("01")) {
+			} else if (recFrame.substring(24, 26).equals("00")) {
 				result = "擦除数据失败";
 			}
 		} else if (recFrame.substring(2, 6).equals("8811")
 				&& recFrame.substring(22, 24).equals("11")) { // 设置发射功率
 			mCurKey = KEY_SET_POWER;
+			String flag = recFrame.substring(24, 26);
+			if ("01".equals(flag)) {
+				result = "设置成功";
+			} else {
+				result = "设置失败";
+			}
+		} else if (recFrame.substring(2, 6).equals("8811")
+				&& recFrame.substring(22, 24).equals("53")) {
+			String flag = recFrame.substring(24, 26);
+			if ("01".equals(flag)) {
+				result = "设置成功";
+			} else {
+				result = "设置失败";
+			}
+		} else if (recFrame.substring(2, 6).equals("8811")
+				&& recFrame.substring(22, 24).equals("2D")) {
 			String flag = recFrame.substring(24, 26);
 			if ("01".equals(flag)) {
 				result = "设置成功";
@@ -464,14 +570,21 @@ public class BluetoothManager implements IBluetoothModel {
 						String result = parseRecFrame(recFrame);
 //						mReceiveCallback.onBluetoothReceive(result);
 						mReceiveCallbackMap.get(mCurKey).onBluetoothReceive(result);
-						Log.d(TAG, "receive frame:============ " + recFrame);
-						Log.d(TAG, "receive result:============ " + result);
+						Log.d(TAG, "receive frame: " + recFrame);
+						Log.d(TAG, "receive result: " + result);
 					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				mState = STATE_DISCONNECTED;
-				mReceiveCallback.onBluetoothReceive(null);
+				mReceiveCallbackMap.get(mCurKey).onBluetoothReceive(null);
+			} finally {
+				try {
+					mInputStream.close();
+					mOutputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 

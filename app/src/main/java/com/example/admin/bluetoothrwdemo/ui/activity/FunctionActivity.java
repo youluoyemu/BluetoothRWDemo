@@ -22,7 +22,7 @@ import com.example.admin.bluetoothrwdemo.ui.fragment.PermissionFragment;
 import com.example.admin.bluetoothrwdemo.ui.fragment.RWFragment;
 import com.example.admin.bluetoothrwdemo.ui.fragment.SettingsFragment;
 
-public class FunctionActivity extends AppCompatActivity implements View.OnClickListener, CheckTagFragment.OnCheckStoppedListener, IFunctionView {
+public class FunctionActivity extends AppCompatActivity implements View.OnClickListener, CheckTagFragment.OnCheckStoppedListener, IFunctionView, SettingsFragment.OnPowerChangedListener {
 
 	// 常量
 	private static final String BLUETOOTH_ADDRESS = "address";
@@ -44,6 +44,7 @@ public class FunctionActivity extends AppCompatActivity implements View.OnClickL
 	private TextView mTvTitle;
 	private ImageView mIvBack;
 
+	IFunctionPresenter mFunctionPresenter;
 	private Fragment mCurFragment;
 	private Fragment mCheckTagFragment;
 	private BroadcastReceiver mBatteryReceiver;
@@ -125,8 +126,8 @@ public class FunctionActivity extends AppCompatActivity implements View.OnClickL
 		mTvTitle.setText(R.string.function_title);
 		mTvDevName.setText(getString(R.string.dev_name, Build.BRAND, Build.MODEL));
 		mTvPower.setText(getString(R.string.power, "0"));
-		IFunctionPresenter functionPresenter = new FunctionPresenterImpl(this);
-		functionPresenter.onCreate();
+		mFunctionPresenter = new FunctionPresenterImpl(this);
+		mFunctionPresenter.onCreate();
 	}
 
 	private void initEvent() {
@@ -237,6 +238,12 @@ public class FunctionActivity extends AppCompatActivity implements View.OnClickL
 				mTvPower.setText(getString(R.string.power, power));
 			}
 		});
+	}
+
+	@Override
+	public void onPowerChanged(String newPower) {
+//		mTvPower.setText(getString(R.string.power, newPower));
+		mFunctionPresenter.onCreate();
 	}
 
 	private class BatteryBroadCastReceiver extends BroadcastReceiver {

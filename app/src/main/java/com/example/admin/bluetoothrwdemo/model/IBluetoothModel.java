@@ -99,6 +99,21 @@ public interface IBluetoothModel {
 	void setPower(String power, OnBluetoothReceiveCallback callback);
 
 	/**
+	 * 设置推荐 RF 链路组合
+	 * @param profile RF 链路设置
+	 * @param callback 回调接口
+	 */
+	void setRFProfile(String profile, OnBluetoothReceiveCallback callback);
+
+	/**
+	 * 设置区域
+	 *
+	 * @param region   区域
+	 * @param callback 回调接口
+	 */
+	void setRegion(String region, OnBluetoothReceiveCallback callback);
+
+	/**
 	 * 蓝牙连接回调接口
 	 */
 	interface OnBluetoothConnectedCallback {

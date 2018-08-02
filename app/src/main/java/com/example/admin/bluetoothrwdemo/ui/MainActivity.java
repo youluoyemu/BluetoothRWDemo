@@ -24,6 +24,7 @@ import com.example.admin.bluetoothrwdemo.presenter.IMainPresenter;
 import com.example.admin.bluetoothrwdemo.presenter.MainPresenterImpl;
 import com.example.admin.bluetoothrwdemo.ui.activity.FunctionActivity;
 import com.example.admin.bluetoothrwdemo.R;
+import com.example.admin.bluetoothrwdemo.utils.ToastUtil;
 
 import java.util.List;
 
@@ -202,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements IMainView, View.O
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				Toast.makeText(MainActivity.this, getString(R.string.conn_failed), Toast.LENGTH_SHORT).show();
+				ToastUtil.show(MainActivity.this, getString(R.string.conn_failed));
 			}
 		});
 	}
@@ -229,8 +230,6 @@ public class MainActivity extends AppCompatActivity implements IMainView, View.O
 					return;
 				}
 				mMainPresenter.updateAddressList(device.getName() + "：" + device.getAddress());
-			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-				Toast.makeText(context, getString(R.string.discovery_finish), Toast.LENGTH_SHORT).show();
 			}
 		}
 	}

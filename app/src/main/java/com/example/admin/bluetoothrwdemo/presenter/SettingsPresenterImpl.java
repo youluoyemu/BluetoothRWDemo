@@ -22,12 +22,12 @@ public class SettingsPresenterImpl implements ISettingsPresenter {
 
 	@Override
 	public void setProfile(String profile) {
-
+		mBluetoothModel.setRFProfile(profile, new OnSetProfileCallback());
 	}
 
 	@Override
-	public void setArea(String area) {
-
+	public void setRegion(String region) {
+		mBluetoothModel.setRegion(region, new OnSetRegionCallback());
 	}
 
 	@Override
@@ -49,7 +49,23 @@ public class SettingsPresenterImpl implements ISettingsPresenter {
 
 		@Override
 		public void onBluetoothReceive(String result) {
-			mSettingsView.displayResultMsg(result);
+			mSettingsView.displayResultMsg(result, true);
+		}
+	}
+
+	private class OnSetProfileCallback implements IBluetoothModel.OnBluetoothReceiveCallback {
+
+		@Override
+		public void onBluetoothReceive(String result) {
+			mSettingsView.displayResultMsg(result, false);
+		}
+	}
+
+	private class OnSetRegionCallback implements IBluetoothModel.OnBluetoothReceiveCallback {
+
+		@Override
+		public void onBluetoothReceive(String result) {
+			mSettingsView.displayResultMsg(result, false);
 		}
 	}
 }

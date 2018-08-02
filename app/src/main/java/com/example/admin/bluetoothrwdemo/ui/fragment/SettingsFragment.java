@@ -1,22 +1,23 @@
 package com.example.admin.bluetoothrwdemo.ui.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatSpinner;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.example.admin.bluetoothrwdemo.R;
 import com.example.admin.bluetoothrwdemo.bean.AlgorithmSettings;
 import com.example.admin.bluetoothrwdemo.presenter.ISettingsPresenter;
 import com.example.admin.bluetoothrwdemo.presenter.SettingsPresenterImpl;
+import com.example.admin.bluetoothrwdemo.utils.ToastUtil;
 
 public class SettingsFragment extends BaseFragment implements AdapterView.OnItemSelectedListener, View.OnClickListener, ISettingsView {
 
@@ -42,6 +43,18 @@ public class SettingsFragment extends BaseFragment implements AdapterView.OnItem
 	private EditText mEtFrequencyPoint;
 
 	private ISettingsPresenter mSettingsPresenter;
+	private OnPowerChangedListener mListener;
+	private String mPower;
+
+	@Override
+	public void onAttach(Context context) {
+		super.onAttach(context);
+		try {
+			mListener = (OnPowerChangedListener) getActivity();
+		} catch (ClassCastException e) {
+			Log.e(TAG, "The host activity must implement OnPowerChangedListener! ");
+		}
+	}
 
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -147,8 +160,8 @@ public class SettingsFragment extends BaseFragment implements AdapterView.OnItem
 	public void onClick(View view) {
 		switch (view.getId()) {
 			case R.id.btn_setting_power:
-				String power = (String) mSpPower.getSelectedItem();
-				mSettingsPresenter.setPower(power);
+				mPower = (String) mSpPower.getSelectedItem();
+				mSettingsPresenter.setPower(mPower);
 				break;
 			case R.id.btn_setting_profile:
 				String profile = (String) mSpProfile.getSelectedItem();
@@ -156,7 +169,7 @@ public class SettingsFragment extends BaseFragment implements AdapterView.OnItem
 				break;
 			case R.id.btn_setting_area:
 				String area = (String) mSpArea.getSelectedItem();
-				mSettingsPresenter.setArea(area);
+				mSettingsPresenter.setRegion(area);
 				break;
 			case R.id.btn_setting_skip:
 				String openTime = mEtOpenTime.getText().toString().trim();
@@ -184,12 +197,19 @@ public class SettingsFragment extends BaseFragment implements AdapterView.OnItem
 	}
 
 	@Override
-	public void displayResultMsg(final String msg) {
+	public void displayResultMsg(final String msg, final boolean isSetPower) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
+				ToastUtil.show(getActivity(), msg);
+				if (isSetPower) {
+					mListener.onPowerChanged(mPower);
+				}
 			}
 		});
+	}
+
+	public interface OnPowerChangedListener {
+		void onPowerChanged(String newPower);
 	}
 }

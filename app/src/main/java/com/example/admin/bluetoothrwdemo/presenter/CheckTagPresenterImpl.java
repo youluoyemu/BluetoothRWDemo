@@ -17,7 +17,7 @@ public class CheckTagPresenterImpl implements ICheckTagPresenter, IBluetoothMode
 	private ICheckTagView mCheckTagView;
 	private IBluetoothModel mBluetoothModel;
 
-	private List<TagInfo> mTagInfoList;
+	private static List<TagInfo> mTagInfoList;
 
 	public CheckTagPresenterImpl(ICheckTagView checkTagView) {
 		mCheckTagView = checkTagView;

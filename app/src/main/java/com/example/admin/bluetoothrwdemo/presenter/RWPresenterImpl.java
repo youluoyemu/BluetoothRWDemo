@@ -21,12 +21,12 @@ public class RWPresenterImpl implements IRWPresenter {
 
 	@Override
 	public void writeData(String area, String data, String addressStart, String length) {
-		mBluetoothModel.writeTagDataArea(area, addressStart, length, data, new OnWriteTagDataCallback());
+//		mBluetoothModel.writeTagDataArea(area, addressStart, length, data, new OnWriteTagDataCallback());
 	}
 
 	@Override
 	public void destroyData(String area, String addressStart, String length) {
-		mBluetoothModel.destroyTagDataArea(area, addressStart, length, new OnDestroyTagDataCallback());
+//		mBluetoothModel.destroyTagDataArea(area, addressStart, length, new OnDestroyTagDataCallback());
 	}
 
 	private class OnReadTagDataCallback implements IBluetoothModel.OnBluetoothReceiveCallback {
